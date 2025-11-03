@@ -1,0 +1,100 @@
+.time-range-selector {
+  margin-bottom: 20px;
+}
+
+.selector-label {
+  display: block;
+  color: #d1d4dc;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.range-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.range-button {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  background: #2a2a3e;
+  color: #d1d4dc;
+  border: 2px solid #2B2B43;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.range-button:hover {
+  border-color: #4a9eff;
+  background: #3a3a4e;
+}
+
+.range-button.active {
+  background: #4a9eff;
+  border-color: #4a9eff;
+  color: white;
+}
+
+.custom-range-form {
+  margin-top: 15px;
+  padding: 15px;
+  background: #2a2a3e;
+  border-radius: 8px;
+  border: 2px solid #2B2B43;
+}
+
+.date-inputs {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.date-input-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.date-input-group label {
+  display: block;
+  color: #8b8b9b;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.date-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 2px solid #2B2B43;
+  border-radius: 6px;
+  background: #1e1e1e;
+  color: #d1d4dc;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.date-input:focus {
+  border-color: #4a9eff;
+}
+
+.custom-submit {
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  background: #4a9eff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.custom-submit:hover {
+  background: #3a8eef;
+}

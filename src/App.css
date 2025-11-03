@@ -1,0 +1,145 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e1e1e 0%, #2a2a3e 100%);
+  color: #d1d4dc;
+}
+
+.app-header {
+  text-align: center;
+  padding: 40px 20px 20px;
+  border-bottom: 2px solid #2B2B43;
+}
+
+.app-header h1 {
+  margin: 0 0 10px;
+  font-size: 42px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #4a9eff 0%, #26a69a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.app-subtitle {
+  margin: 0;
+  font-size: 18px;
+  color: #8b8b9b;
+}
+
+.app-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.controls-section {
+  background: #252536;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  border: 2px solid #2B2B43;
+}
+
+.control-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+@media (max-width: 968px) {
+  .control-group {
+    grid-template-columns: 1fr;
+  }
+}
+
+.loading-container {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 20px;
+  border: 4px solid #2B2B43;
+  border-top: 4px solid #4a9eff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-container p {
+  color: #8b8b9b;
+  font-size: 16px;
+}
+
+.error-container {
+  text-align: center;
+  padding: 40px 20px;
+  background: rgba(239, 83, 80, 0.1);
+  border: 2px solid rgba(239, 83, 80, 0.3);
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.error-container p {
+  color: #ef5350;
+  font-size: 16px;
+  margin: 0;
+}
+
+.app-footer {
+  text-align: center;
+  padding: 40px 20px;
+  border-top: 2px solid #2B2B43;
+  margin-top: 40px;
+}
+
+.app-footer p {
+  margin: 8px 0;
+  color: #8b8b9b;
+  font-size: 14px;
+}
+
+.app-footer a {
+  color: #4a9eff;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.app-footer a:hover {
+  color: #3a8eef;
+  text-decoration: underline;
+}
+
+.api-note {
+  background: rgba(74, 158, 255, 0.1);
+  padding: 12px 20px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-top: 15px;
+  border: 1px solid rgba(74, 158, 255, 0.2);
+}
