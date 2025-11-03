@@ -1,0 +1,20 @@
+.add-to-portfolio-btn {
+  padding: 8px 16px;
+  background: #4a9eff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-left: 16px;
+}
+
+.add-to-portfolio-btn:hover {
+  background: #3a8eef;
+}
+
+.add-to-portfolio-btn:active {
+  background: #2a7edf;
+}

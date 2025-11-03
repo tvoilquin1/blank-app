@@ -40,7 +40,7 @@ const generateMockData = (startDate, endDate, timeframe, symbol) => {
   const now = endDate.getTime();
   const start = startDate.getTime();
 
-  // Base price varies by symbol
+  // Base price varies by symbol (exported for current price lookups)
   const basePrices = {
     'AAPL': 180,
     'GOOGL': 140,
@@ -197,4 +197,31 @@ export const fetchStockData = async (symbol, timeframe, rangeType, customDates) 
   // Fall back to mock data
   console.log('Using mock data for', symbol);
   return generateMockData(startDate, endDate, timeframe, symbol);
+};
+
+/**
+ * Get current price for a symbol
+ * This simulates the latest close price from the most recent data point
+ */
+export const getCurrentPrice = (symbol, chartData = null) => {
+  // If we have chart data, use the most recent close price
+  if (chartData && chartData.length > 0) {
+    return chartData[chartData.length - 1].close;
+  }
+
+  // Otherwise, generate a mock current price based on symbol
+  const basePrices = {
+    'AAPL': 180,
+    'GOOGL': 140,
+    'MSFT': 380,
+    'AMZN': 155,
+    'TSLA': 240,
+    'NVDA': 480,
+    'META': 320,
+  };
+
+  const basePrice = basePrices[symbol.toUpperCase()] || 100;
+  // Add some random variation to simulate current price movement
+  const variation = (Math.random() - 0.5) * 10;
+  return parseFloat((basePrice + variation).toFixed(2));
 };

@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { createChart, CandlestickSeries } from 'lightweight-charts';
+import AddToPortfolio from './AddToPortfolio';
 import './Chart.css';
 
-const Chart = ({ data, symbol }) => {
+const Chart = ({ data, symbol, onAddToPortfolio }) => {
   const chartContainerRef = useRef();
   const chartRef = useRef();
   const candlestickSeriesRef = useRef();
@@ -100,6 +101,7 @@ const Chart = ({ data, symbol }) => {
     <div className="chart-wrapper">
       <div className="chart-header">
         <h2>{symbol || 'Select a ticker'}</h2>
+        {symbol && <AddToPortfolio symbol={symbol} onAddClick={onAddToPortfolio} />}
       </div>
       <div ref={chartContainerRef} className="chart-container" />
     </div>
