@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { createChart } from 'lightweight-charts';
+import { createChart, CandlestickSeries } from 'lightweight-charts';
 import './Chart.css';
 
 const Chart = ({ data, symbol }) => {
@@ -33,7 +33,7 @@ const Chart = ({ data, symbol }) => {
     });
 
     // Create candlestick series
-    const candlestickSeries = chart.addCandlestickSeries({
+    const candlestickSeries = chart.addSeries(CandlestickSeries, {
       upColor: '#26a69a',
       downColor: '#ef5350',
       borderVisible: false,
@@ -64,7 +64,35 @@ const Chart = ({ data, symbol }) => {
   useEffect(() => {
     if (candlestickSeriesRef.current && data && data.length > 0) {
       candlestickSeriesRef.current.setData(data);
-      chartRef.current.timeScale().fitContent();
+
+      // Add 5 candle padding on both sides using logical range
+      if (data.length > 10) {
+        // For larger datasets, use logical range with padding
+        const timeScale = chartRef.current.timeScale();
+
+        // Use a small delay to ensure data is fully loaded
+        setTimeout(() => {
+          timeScale.setVisibleLogicalRange({
+            from: -5,
+            to: data.length + 4
+          });
+        }, 0);
+      } else if (data.length >= 2) {
+        // For smaller datasets, fit all content with padding
+        const timeScale = chartRef.current.timeScale();
+
+        setTimeout(() => {
+          timeScale.fitContent();
+          // Then adjust with padding
+          const visibleRange = timeScale.getVisibleLogicalRange();
+          if (visibleRange) {
+            timeScale.setVisibleLogicalRange({
+              from: visibleRange.from - 5,
+              to: visibleRange.to + 5
+            });
+          }
+        }, 0);
+      }
     }
   }, [data]);
 
