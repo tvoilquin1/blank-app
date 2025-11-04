@@ -3,6 +3,7 @@ import Chart from './components/Chart';
 import TickerInput from './components/TickerInput';
 import TimeRangeSelector from './components/TimeRangeSelector';
 import TimeframeSelector from './components/TimeframeSelector';
+import StudiesSelector from './components/StudiesSelector';
 import AddPortfolioEntryModal from './components/AddPortfolioEntryModal';
 import EditPortfolioEntryModal from './components/EditPortfolioEntryModal';
 import PortfolioView from './components/PortfolioView';
@@ -28,6 +29,7 @@ function App() {
   const [portfolioChartData, setPortfolioChartData] = useState([]);
   const [portfolioMarkers, setPortfolioMarkers] = useState([]);
   const [portfolioMetadata, setPortfolioMetadata] = useState({});
+  const [currentStudy, setCurrentStudy] = useState(null);
 
   // Load data whenever parameters change (only for stock mode)
   useEffect(() => {
@@ -175,26 +177,45 @@ function App() {
     setChartMode('stock');
   };
 
+  const handleStudyChange = (study) => {
+    setCurrentStudy(study);
+    // TODO: Implement study logic
+    console.log('Selected study:', study);
+  };
+
   return (
     <div className="app">
       <header className="app-header">
-        <h1>📈 Stock Chart Viewer</h1>
-        <p className="app-subtitle">Visualize stock price data with candlestick charts</p>
+        <h1>📈 Portfolio Analyzer</h1>
+        <p className="app-subtitle">Turn your portfolio into an index</p>
       </header>
 
       <div className="app-container">
         <div className="controls-section">
-          {chartMode === 'stock' && (
-            <TickerInput onTickerChange={handleTickerChange} currentTicker={ticker} />
-          )}
-
-          <div className="control-group">
-            <TimeRangeSelector onRangeChange={handleRangeChange} currentRange={timeRange} />
+          <div className="controls-grid">
             {chartMode === 'stock' && (
-              <TimeframeSelector
-                onTimeframeChange={handleTimeframeChange}
-                currentTimeframe={timeframe}
-              />
+              <div className="ticker-section">
+                <TickerInput onTickerChange={handleTickerChange} currentTicker={ticker} />
+              </div>
+            )}
+
+            {chartMode === 'stock' && (
+              <div className="studies-section">
+                <StudiesSelector onStudyChange={handleStudyChange} currentStudy={currentStudy} />
+              </div>
+            )}
+
+            <div className="time-range-section">
+              <TimeRangeSelector onRangeChange={handleRangeChange} currentRange={timeRange} />
+            </div>
+
+            {chartMode === 'stock' && (
+              <div className="timeframe-section">
+                <TimeframeSelector
+                  onTimeframeChange={handleTimeframeChange}
+                  currentTimeframe={timeframe}
+                />
+              </div>
             )}
           </div>
         </div>

@@ -11,8 +11,6 @@ const TickerInput = ({ onTickerChange, currentTicker }) => {
     }
   };
 
-  const popularTickers = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA', 'NVDA', 'META'];
-
   return (
     <div className="ticker-input-wrapper">
       <form onSubmit={handleSubmit} className="ticker-form">
@@ -27,21 +25,6 @@ const TickerInput = ({ onTickerChange, currentTicker }) => {
           Load
         </button>
       </form>
-      <div className="popular-tickers">
-        <span className="popular-label">Popular:</span>
-        {popularTickers.map((ticker) => (
-          <button
-            key={ticker}
-            onClick={() => {
-              setInputValue(ticker);
-              onTickerChange(ticker);
-            }}
-            className={`ticker-chip ${currentTicker === ticker ? 'active' : ''}`}
-          >
-            {ticker}
-          </button>
-        ))}
-      </div>
     </div>
   );
 };

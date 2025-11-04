@@ -1,11 +1,10 @@
 .ticker-input-wrapper {
-  margin-bottom: 20px;
+  width: 100%;
 }
 
 .ticker-form {
   display: flex;
   gap: 10px;
-  margin-bottom: 15px;
 }
 
 .ticker-input {
@@ -46,40 +45,4 @@
 
 .ticker-submit:active {
   background: #2a7edf;
-}
-
-.popular-tickers {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.popular-label {
-  color: #8b8b9b;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.ticker-chip {
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  background: #2a2a3e;
-  color: #d1d4dc;
-  border: 2px solid #2B2B43;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.ticker-chip:hover {
-  border-color: #4a9eff;
-  background: #3a3a4e;
-}
-
-.ticker-chip.active {
-  background: #4a9eff;
-  border-color: #4a9eff;
-  color: white;
 }
