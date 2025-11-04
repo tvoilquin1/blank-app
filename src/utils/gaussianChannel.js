@@ -25,8 +25,8 @@ function calculateRecursiveFilter(alpha, sourceArray, poles) {
 
     for (let i = 0; i < filtered.length; i++) {
       if (i === 0) {
-        // First value - no previous filter output
-        temp[i] = alpha * filtered[i];
+        // Initialize with first input value to avoid warm-up transients
+        temp[i] = filtered[i];
       } else {
         // Single-pole IIR filter: output = alpha * input + (1-alpha) * previous_output
         temp[i] = alpha * filtered[i] + x * temp[i - 1];
