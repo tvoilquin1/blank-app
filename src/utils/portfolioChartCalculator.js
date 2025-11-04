@@ -113,9 +113,15 @@ export const calculatePortfolioPerformanceIndex = async (rangeType = '1y', custo
     costBasis: calculateCostBasis(entry)
   })).sort((a, b) => a.time - b.time);
 
-  // Calculate portfolio index for each timestamp
+  // Calculate portfolio index for each timestamp with dynamic rebalancing
+  // Strategy: Chain-linked performance that resets baseline at each new position
   const chartData = [];
-  let baselineValue = null;
+  const totalCostBasis = entries.reduce((sum, entry) => sum + calculateCostBasis(entry), 0);
+
+  let previousPositionCount = 0;
+  let baselinePortfolioValue = null;
+  let indexAtLastRebalance = 100;
+  let lastPortfolioValue = null;
 
   for (const timestamp of timestamps) {
     // Find which positions existed at this time
@@ -126,40 +132,55 @@ export const calculatePortfolioPerformanceIndex = async (rangeType = '1y', custo
 
     if (activeEntries.length === 0) continue;
 
-    // Calculate total portfolio value at this timestamp
-    let totalValue = 0;
+    // Calculate current portfolio value
+    let currentPortfolioValue = 0;
     let hasAllPrices = true;
 
     for (const entry of activeEntries) {
-      const price = getPriceAtTime(historicalDataMap[entry.symbol], timestamp);
-      if (price === null) {
+      const currentPrice = getPriceAtTime(historicalDataMap[entry.symbol], timestamp);
+      if (currentPrice === null) {
         hasAllPrices = false;
         break;
       }
-      totalValue += price * entry.quantity;
+      currentPortfolioValue += currentPrice * entry.quantity;
     }
 
     if (!hasAllPrices) continue;
 
-    // Set baseline at first valid data point
-    if (baselineValue === null) {
-      baselineValue = totalValue;
+    // Detect rebalancing event (new position added)
+    if (activeEntries.length !== previousPositionCount) {
+      if (previousPositionCount > 0 && baselinePortfolioValue !== null && lastPortfolioValue !== null) {
+        // Use the PREVIOUS timestamp's value to calculate index before new position
+        indexAtLastRebalance = (lastPortfolioValue / baselinePortfolioValue) * indexAtLastRebalance;
+      }
+      // Reset baseline to current portfolio value (with new position)
+      baselinePortfolioValue = currentPortfolioValue;
+      previousPositionCount = activeEntries.length;
     }
 
-    // Calculate index value (baseline = 100)
-    const indexValue = (totalValue / baselineValue) * 100;
+    // Initialize baseline on first timestamp
+    if (baselinePortfolioValue === null) {
+      baselinePortfolioValue = currentPortfolioValue;
+      previousPositionCount = activeEntries.length;
+    }
+
+    // Calculate index value
+    const indexValue = (currentPortfolioValue / baselinePortfolioValue) * indexAtLastRebalance;
 
     chartData.push({
       time: timestamp,
       value: parseFloat(indexValue.toFixed(2))
     });
+
+    // Store this value for next iteration
+    lastPortfolioValue = currentPortfolioValue;
   }
 
   // Calculate metadata
   const metadata = {
     startDate: actualStartDate,
     endDate,
-    baselineValue,
+    totalCostBasis,
     currentValue: chartData.length > 0 ? chartData[chartData.length - 1].value : 100,
     totalReturn: chartData.length > 0 ? chartData[chartData.length - 1].value - 100 : 0,
     symbolCount: symbols.length,
