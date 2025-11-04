@@ -1,14 +1,20 @@
 import { useEffect, useRef } from 'react';
 import { createChart, CandlestickSeries, LineSeries } from 'lightweight-charts';
 import AddToPortfolio from './AddToPortfolio';
+import { calculateGaussianChannel } from '../utils/gaussianChannel';
 import './Chart.css';
 
-const Chart = ({ data, symbol, onAddToPortfolio, mode = 'stock', markers = [], metadata = {}, onBackToStock }) => {
+const Chart = ({ data, symbol, onAddToPortfolio, mode = 'stock', markers = [], metadata = {}, onBackToStock, study = null }) => {
   const chartContainerRef = useRef();
   const chartRef = useRef();
   const candlestickSeriesRef = useRef();
   const lineSeriesRef = useRef();
   const markersRef = useRef([]);
+
+  // Gaussian Channel series refs
+  const gaussianFilterSeriesRef = useRef();
+  const gaussianUpperBandSeriesRef = useRef();
+  const gaussianLowerBandSeriesRef = useRef();
 
   useEffect(() => {
     // Create chart instance
@@ -158,6 +164,133 @@ const Chart = ({ data, symbol, onAddToPortfolio, mode = 'stock', markers = [], m
       }
     }
   }, [data, mode, markers]);
+
+  // Update Gaussian Channel overlay based on study selection
+  useEffect(() => {
+    if (!chartRef.current || mode !== 'stock' || !data || data.length === 0) {
+      // Remove Gaussian Channel series if they exist
+      if (gaussianFilterSeriesRef.current) {
+        try {
+          chartRef.current.removeSeries(gaussianFilterSeriesRef.current);
+        } catch (e) {}
+        gaussianFilterSeriesRef.current = null;
+      }
+      if (gaussianUpperBandSeriesRef.current) {
+        try {
+          chartRef.current.removeSeries(gaussianUpperBandSeriesRef.current);
+        } catch (e) {}
+        gaussianUpperBandSeriesRef.current = null;
+      }
+      if (gaussianLowerBandSeriesRef.current) {
+        try {
+          chartRef.current.removeSeries(gaussianLowerBandSeriesRef.current);
+        } catch (e) {}
+        gaussianLowerBandSeriesRef.current = null;
+      }
+      return;
+    }
+
+    // Remove existing Gaussian series
+    if (gaussianFilterSeriesRef.current) {
+      try {
+        chartRef.current.removeSeries(gaussianFilterSeriesRef.current);
+      } catch (e) {}
+      gaussianFilterSeriesRef.current = null;
+    }
+    if (gaussianUpperBandSeriesRef.current) {
+      try {
+        chartRef.current.removeSeries(gaussianUpperBandSeriesRef.current);
+      } catch (e) {}
+      gaussianUpperBandSeriesRef.current = null;
+    }
+    if (gaussianLowerBandSeriesRef.current) {
+      try {
+        chartRef.current.removeSeries(gaussianLowerBandSeriesRef.current);
+      } catch (e) {}
+      gaussianLowerBandSeriesRef.current = null;
+    }
+
+    // If Gaussian study is selected, add the overlay
+    if (study === 'Gaussian') {
+      console.log('Gaussian study selected, data length:', data?.length);
+
+      // Validate data before calculating
+      if (!data || data.length < 10) {
+        console.warn('Not enough data points for Gaussian Channel');
+        return;
+      }
+
+      // Check if data has required properties
+      const hasValidData = data.every(d =>
+        d &&
+        typeof d.high === 'number' &&
+        typeof d.low === 'number' &&
+        typeof d.close === 'number' &&
+        isFinite(d.high) &&
+        isFinite(d.low) &&
+        isFinite(d.close)
+      );
+
+      if (!hasValidData) {
+        console.error('Invalid data format for Gaussian Channel');
+        return;
+      }
+
+      const gaussian = calculateGaussianChannel(data);
+
+      // Check if gaussian calculation succeeded
+      if (!gaussian.filter || gaussian.filter.length === 0) {
+        console.warn('Gaussian Channel calculation failed');
+        return;
+      }
+
+      // Determine if channel is bullish (green) or bearish (red)
+      // Check the trend of the filter line
+      const isBullish = gaussian.rawFilter.length >= 2 &&
+                        gaussian.rawFilter[gaussian.rawFilter.length - 1] >
+                        gaussian.rawFilter[gaussian.rawFilter.length - 2];
+
+      const channelColor = isBullish ? '#0aff68' : '#ff0a5a';
+      const fillColor = isBullish ? 'rgba(10, 255, 104, 0.1)' : 'rgba(255, 10, 90, 0.1)';
+
+      // Add upper band line
+      const upperBandSeries = chartRef.current.addSeries(LineSeries, {
+        color: channelColor,
+        lineWidth: 1,
+        priceScaleId: 'right',
+        lastValueVisible: false,
+        priceLineVisible: false,
+      });
+      upperBandSeries.setData(gaussian.upperBand);
+      gaussianUpperBandSeriesRef.current = upperBandSeries;
+
+      // Add filter (middle) line
+      const filterSeries = chartRef.current.addSeries(LineSeries, {
+        color: channelColor,
+        lineWidth: 2,
+        priceScaleId: 'right',
+        lastValueVisible: false,
+        priceLineVisible: false,
+      });
+      filterSeries.setData(gaussian.filter);
+      gaussianFilterSeriesRef.current = filterSeries;
+
+      // Add lower band line
+      const lowerBandSeries = chartRef.current.addSeries(LineSeries, {
+        color: channelColor,
+        lineWidth: 1,
+        priceScaleId: 'right',
+        lastValueVisible: false,
+        priceLineVisible: false,
+      });
+      lowerBandSeries.setData(gaussian.lowerBand);
+      gaussianLowerBandSeriesRef.current = lowerBandSeries;
+
+      // Note: lightweight-charts doesn't have a built-in area between two lines feature
+      // The channel fill would need to be implemented with a custom plugin or overlay canvas
+      // For now, we'll just show the three lines (upper, middle, lower)
+    }
+  }, [study, data, mode]);
 
   return (
     <div className="chart-wrapper">

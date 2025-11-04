@@ -4,6 +4,15 @@ import './StudiesSelector.css';
 const StudiesSelector = ({ onStudyChange, currentStudy }) => {
   const studies = ['Gaussian', 'Study 2', 'Study 3'];
 
+  const handleStudyClick = (study) => {
+    // Toggle study: if already active, deactivate it
+    if (currentStudy === study) {
+      onStudyChange(null);
+    } else {
+      onStudyChange(study);
+    }
+  };
+
   return (
     <div className="studies-selector">
       <label className="studies-label">Studies:</label>
@@ -11,7 +20,7 @@ const StudiesSelector = ({ onStudyChange, currentStudy }) => {
         {studies.map((study) => (
           <button
             key={study}
-            onClick={() => onStudyChange(study)}
+            onClick={() => handleStudyClick(study)}
             className={`study-btn ${currentStudy === study ? 'active' : ''}`}
           >
             {study}

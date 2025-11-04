@@ -179,8 +179,6 @@ function App() {
 
   const handleStudyChange = (study) => {
     setCurrentStudy(study);
-    // TODO: Implement study logic
-    console.log('Selected study:', study);
   };
 
   return (
@@ -239,6 +237,7 @@ function App() {
             symbol={ticker}
             onAddToPortfolio={handleAddToPortfolio}
             mode="stock"
+            study={currentStudy}
           />
         )}
 
