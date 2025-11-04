@@ -87,8 +87,9 @@ export const calculatePortfolioPerformanceIndex = async (rangeType = '1y', custo
   // Calculate date range for chart
   const { startDate, endDate } = calculateDateRange(rangeType, customDates);
 
-  // Use earliestPurchase as start, but not later than endDate
-  const actualStartDate = earliestPurchase;
+  // Use the later of earliestPurchase or the requested startDate
+  // This ensures we include all portfolio data while respecting custom date filters
+  const actualStartDate = rangeType === 'custom' && customDates ? startDate : earliestPurchase;
 
   // Get all unique symbols
   const symbols = [...new Set(entries.map(e => e.symbol))];
