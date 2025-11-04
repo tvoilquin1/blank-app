@@ -44,17 +44,27 @@ export const fetchMultipleSymbolsData = async (symbols, startDate, endDate) => {
 const getPriceAtTime = (symbolData, timestamp) => {
   if (!symbolData || symbolData.length === 0) return null;
 
-  // Find the closest price at or before the timestamp
+  // Find the data point with the closest timestamp (at or before)
   let closestPrice = null;
+  let closestTimeDiff = Infinity;
+
   for (let i = 0; i < symbolData.length; i++) {
-    if (symbolData[i].time <= timestamp) {
+    const timeDiff = timestamp - symbolData[i].time;
+
+    // If this timestamp is at or before our target, and closer than previous
+    if (timeDiff >= 0 && timeDiff < closestTimeDiff) {
       closestPrice = symbolData[i].close;
-    } else {
+      closestTimeDiff = timeDiff;
+    }
+
+    // If we've gone past the timestamp, stop
+    if (symbolData[i].time > timestamp) {
       break;
     }
   }
 
-  return closestPrice || symbolData[0].close;
+  // If no exact or prior match found, use the first available price
+  return closestPrice !== null ? closestPrice : (symbolData.length > 0 ? symbolData[0].close : null);
 };
 
 /**

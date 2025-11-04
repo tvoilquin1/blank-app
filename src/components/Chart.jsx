@@ -97,7 +97,6 @@ const Chart = ({ data, symbol, onAddToPortfolio, mode = 'stock', markers = [], m
       });
 
       lineSeries.setData(data);
-      lineSeriesRef.current = lineSeries;
 
       // Add markers for rebalancing events
       if (markers && markers.length > 0) {
@@ -108,8 +107,14 @@ const Chart = ({ data, symbol, onAddToPortfolio, mode = 'stock', markers = [], m
           shape: 'circle',
           text: `${marker.symbol} (${marker.quantity})`,
         }));
-        lineSeries.setMarkers(markerData);
+        try {
+          lineSeries.setMarkers(markerData);
+        } catch (e) {
+          console.warn('Markers not supported in this version of lightweight-charts');
+        }
       }
+
+      lineSeriesRef.current = lineSeries;
 
       // Fit content with padding
       setTimeout(() => {

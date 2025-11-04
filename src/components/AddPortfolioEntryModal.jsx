@@ -47,8 +47,8 @@ function AddPortfolioEntryModal({ symbol, onClose, onSave }) {
       return { error: 'Purchase date cannot be in the future' };
     }
 
-    // Return the standardized DD/MM/YYYY format
-    const standardizedDate = `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+    // Return the standardized MM/DD/YYYY format
+    const standardizedDate = `${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}/${year}`;
     return { date: standardizedDate, error: null };
   };
 
@@ -85,7 +85,7 @@ function AddPortfolioEntryModal({ symbol, onClose, onSave }) {
       const entry = {
         symbol: symbol.toUpperCase(),
         purchasePrice: parseFloat(formData.purchasePrice),
-        purchaseDate: dateValidation.date, // Use standardized DD/MM/YYYY format
+        purchaseDate: dateValidation.date, // Use standardized MM/DD/YYYY format
         quantity: parseInt(formData.quantity),
       };
       onSave(entry);
@@ -139,7 +139,7 @@ function AddPortfolioEntryModal({ symbol, onClose, onSave }) {
               className={errors.purchaseDate ? 'error' : ''}
             />
             {errors.purchaseDate && <span className="error-message">{errors.purchaseDate}</span>}
-            <span className="field-hint">Accepts: M/D/YYYY, MM/DD/YY (displays as DD/MM/YYYY)</span>
+            <span className="field-hint">Accepts: M/D/YYYY, MM/DD/YY (displays as MM/DD/YYYY)</span>
           </div>
 
           <div className="form-group">
