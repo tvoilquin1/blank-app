@@ -8,9 +8,10 @@ import {
   calculatePortfolioPercent
 } from '../utils/portfolioStorage';
 import { getCurrentPrice } from '../utils/stockApi';
+import { hasPortfolioData } from '../utils/portfolioChartCalculator';
 import './PortfolioView.css';
 
-function PortfolioView({ currentPrices = {}, onEditEntry }) {
+function PortfolioView({ currentPrices = {}, onEditEntry, onViewPortfolioChart, onViewStockChart }) {
   const [entries, setEntries] = useState([]);
   const [sortBy, setSortBy] = useState('date'); // 'date', 'symbol', 'value'
 
@@ -97,7 +98,17 @@ function PortfolioView({ currentPrices = {}, onEditEntry }) {
   return (
     <div className="portfolio-view">
       <div className="portfolio-header">
-        <h2>My Portfolio</h2>
+        <div className="portfolio-title-section">
+          <h2>My Portfolio</h2>
+          <button
+            className="view-portfolio-chart-btn"
+            onClick={onViewPortfolioChart}
+            disabled={!hasPortfolioData()}
+            title={!hasPortfolioData() ? "Add stocks to your portfolio to view chart" : "View portfolio performance chart"}
+          >
+            View Portfolio Chart
+          </button>
+        </div>
         <div className="portfolio-stats">
           <div className="stat">
             <span className="stat-label">Total Holdings:</span>
@@ -152,7 +163,9 @@ function PortfolioView({ currentPrices = {}, onEditEntry }) {
 
               return (
                 <tr key={entry.id}>
-                  <td className="symbol-cell">{entry.symbol}</td>
+                  <td className="symbol-cell clickable" onClick={() => onViewStockChart(entry.symbol)} title="Click to view chart">
+                    {entry.symbol}
+                  </td>
                   <td>{entry.purchaseDate}</td>
                   <td>{formatCurrency(entry.purchasePrice)}</td>
                   <td>{entry.quantity}</td>

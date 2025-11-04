@@ -8,6 +8,7 @@ import EditPortfolioEntryModal from './components/EditPortfolioEntryModal';
 import PortfolioView from './components/PortfolioView';
 import { fetchStockData, getCurrentPrice } from './utils/stockApi';
 import { addPortfolioEntry, updatePortfolioEntry, getPortfolioEntries } from './utils/portfolioStorage';
+import { calculatePortfolioPerformanceIndex, getPortfolioCurrentPrices } from './utils/portfolioChartCalculator';
 import './App.css';
 
 function App() {
@@ -23,11 +24,24 @@ function App() {
   const [editingEntry, setEditingEntry] = useState(null);
   const [portfolioRefresh, setPortfolioRefresh] = useState(0);
   const [currentPrices, setCurrentPrices] = useState({});
+  const [chartMode, setChartMode] = useState('stock'); // 'stock' or 'portfolio'
+  const [portfolioChartData, setPortfolioChartData] = useState([]);
+  const [portfolioMarkers, setPortfolioMarkers] = useState([]);
+  const [portfolioMetadata, setPortfolioMetadata] = useState({});
 
-  // Load data whenever parameters change
+  // Load data whenever parameters change (only for stock mode)
   useEffect(() => {
-    loadStockData();
-  }, [ticker, timeRange, timeframe, customDates]);
+    if (chartMode === 'stock') {
+      loadStockData();
+    }
+  }, [ticker, timeRange, timeframe, customDates, chartMode]);
+
+  // Load portfolio chart data when in portfolio mode or when date range changes
+  useEffect(() => {
+    if (chartMode === 'portfolio') {
+      loadPortfolioChartData();
+    }
+  }, [chartMode, timeRange, customDates, portfolioRefresh]);
 
   // Update current prices when chart data changes
   useEffect(() => {
@@ -42,20 +56,13 @@ function App() {
 
   // Load prices for all portfolio symbols on mount and when portfolio refreshes
   useEffect(() => {
-    const loadPortfolioPrices = () => {
-      const entries = getPortfolioEntries();
-      const symbols = [...new Set(entries.map(e => e.symbol))];
-      const prices = {};
-
-      symbols.forEach(symbol => {
-        // Use existing price if available, otherwise generate one
-        prices[symbol] = currentPrices[symbol] || getCurrentPrice(symbol);
-      });
-
+    const loadPortfolioPrices = async () => {
+      const prices = await getPortfolioCurrentPrices();
       setCurrentPrices(prev => ({ ...prev, ...prices }));
     };
 
     loadPortfolioPrices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [portfolioRefresh]);
 
   const loadStockData = async () => {
@@ -70,6 +77,28 @@ function App() {
     } catch (err) {
       setError('Failed to load stock data. Please try again.');
       console.error('Error loading data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadPortfolioChartData = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { chartData, markers, metadata } = await calculatePortfolioPerformanceIndex(timeRange, customDates);
+
+      if (chartData.length === 0) {
+        setError('No portfolio data available for the selected date range.');
+      } else {
+        setPortfolioChartData(chartData);
+        setPortfolioMarkers(markers);
+        setPortfolioMetadata(metadata);
+      }
+    } catch (err) {
+      setError('Failed to load portfolio chart data. Please try again.');
+      console.error('Error loading portfolio chart:', err);
     } finally {
       setLoading(false);
     }
@@ -133,6 +162,19 @@ function App() {
     }
   };
 
+  const handleViewPortfolioChart = async () => {
+    setChartMode('portfolio');
+  };
+
+  const handleBackToStockChart = () => {
+    setChartMode('stock');
+  };
+
+  const handleViewStockChart = (symbol) => {
+    setTicker(symbol);
+    setChartMode('stock');
+  };
+
   return (
     <div className="app">
       <header className="app-header">
@@ -142,14 +184,18 @@ function App() {
 
       <div className="app-container">
         <div className="controls-section">
-          <TickerInput onTickerChange={handleTickerChange} currentTicker={ticker} />
+          {chartMode === 'stock' && (
+            <TickerInput onTickerChange={handleTickerChange} currentTicker={ticker} />
+          )}
 
           <div className="control-group">
             <TimeRangeSelector onRangeChange={handleRangeChange} currentRange={timeRange} />
-            <TimeframeSelector
-              onTimeframeChange={handleTimeframeChange}
-              currentTimeframe={timeframe}
-            />
+            {chartMode === 'stock' && (
+              <TimeframeSelector
+                onTimeframeChange={handleTimeframeChange}
+                currentTimeframe={timeframe}
+              />
+            )}
           </div>
         </div>
 
@@ -166,14 +212,31 @@ function App() {
           </div>
         )}
 
-        {!loading && !error && (
-          <Chart data={chartData} symbol={ticker} onAddToPortfolio={handleAddToPortfolio} />
+        {!loading && !error && chartMode === 'stock' && (
+          <Chart
+            data={chartData}
+            symbol={ticker}
+            onAddToPortfolio={handleAddToPortfolio}
+            mode="stock"
+          />
+        )}
+
+        {!loading && !error && chartMode === 'portfolio' && (
+          <Chart
+            data={portfolioChartData}
+            mode="portfolio"
+            markers={portfolioMarkers}
+            metadata={portfolioMetadata}
+            onBackToStock={handleBackToStockChart}
+          />
         )}
 
         <PortfolioView
           key={portfolioRefresh}
           currentPrices={currentPrices}
           onEditEntry={handleEditEntry}
+          onViewPortfolioChart={handleViewPortfolioChart}
+          onViewStockChart={handleViewStockChart}
         />
       </div>
 

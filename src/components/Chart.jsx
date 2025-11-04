@@ -1,12 +1,14 @@
 import { useEffect, useRef } from 'react';
-import { createChart, CandlestickSeries } from 'lightweight-charts';
+import { createChart, CandlestickSeries, LineSeries } from 'lightweight-charts';
 import AddToPortfolio from './AddToPortfolio';
 import './Chart.css';
 
-const Chart = ({ data, symbol, onAddToPortfolio }) => {
+const Chart = ({ data, symbol, onAddToPortfolio, mode = 'stock', markers = [], metadata = {}, onBackToStock }) => {
   const chartContainerRef = useRef();
   const chartRef = useRef();
   const candlestickSeriesRef = useRef();
+  const lineSeriesRef = useRef();
+  const markersRef = useRef([]);
 
   useEffect(() => {
     // Create chart instance
@@ -33,17 +35,7 @@ const Chart = ({ data, symbol, onAddToPortfolio }) => {
       },
     });
 
-    // Create candlestick series
-    const candlestickSeries = chart.addSeries(CandlestickSeries, {
-      upColor: '#26a69a',
-      downColor: '#ef5350',
-      borderVisible: false,
-      wickUpColor: '#26a69a',
-      wickDownColor: '#ef5350',
-    });
-
     chartRef.current = chart;
-    candlestickSeriesRef.current = candlestickSeries;
 
     // Handle window resize
     const handleResize = () => {
@@ -62,16 +54,84 @@ const Chart = ({ data, symbol, onAddToPortfolio }) => {
     };
   }, []);
 
+  // Update series based on mode
   useEffect(() => {
-    if (candlestickSeriesRef.current && data && data.length > 0) {
-      candlestickSeriesRef.current.setData(data);
+    if (!chartRef.current || !data || data.length === 0) return;
+
+    // Remove existing series safely
+    try {
+      if (candlestickSeriesRef.current) {
+        chartRef.current.removeSeries(candlestickSeriesRef.current);
+        candlestickSeriesRef.current = null;
+      }
+    } catch (e) {
+      // Series may already be removed
+      candlestickSeriesRef.current = null;
+    }
+
+    try {
+      if (lineSeriesRef.current) {
+        chartRef.current.removeSeries(lineSeriesRef.current);
+        lineSeriesRef.current = null;
+      }
+    } catch (e) {
+      // Series may already be removed
+      lineSeriesRef.current = null;
+    }
+
+    // Remove existing markers
+    markersRef.current.forEach(marker => {
+      if (marker && marker.remove) marker.remove();
+    });
+    markersRef.current = [];
+
+    if (mode === 'portfolio') {
+      // Create line series for portfolio
+      const lineSeries = chartRef.current.addSeries(LineSeries, {
+        color: '#2962FF',
+        lineWidth: 2,
+        priceFormat: {
+          type: 'custom',
+          formatter: (price) => price.toFixed(2),
+        },
+      });
+
+      lineSeries.setData(data);
+      lineSeriesRef.current = lineSeries;
+
+      // Add markers for rebalancing events
+      if (markers && markers.length > 0) {
+        const markerData = markers.map(marker => ({
+          time: marker.time,
+          position: 'belowBar',
+          color: '#f68410',
+          shape: 'circle',
+          text: `${marker.symbol} (${marker.quantity})`,
+        }));
+        lineSeries.setMarkers(markerData);
+      }
+
+      // Fit content with padding
+      setTimeout(() => {
+        const timeScale = chartRef.current.timeScale();
+        timeScale.fitContent();
+      }, 0);
+    } else {
+      // Create candlestick series for stock
+      const candlestickSeries = chartRef.current.addSeries(CandlestickSeries, {
+        upColor: '#26a69a',
+        downColor: '#ef5350',
+        borderVisible: false,
+        wickUpColor: '#26a69a',
+        wickDownColor: '#ef5350',
+      });
+
+      candlestickSeries.setData(data);
+      candlestickSeriesRef.current = candlestickSeries;
 
       // Add 5 candle padding on both sides using logical range
       if (data.length > 10) {
-        // For larger datasets, use logical range with padding
         const timeScale = chartRef.current.timeScale();
-
-        // Use a small delay to ensure data is fully loaded
         setTimeout(() => {
           timeScale.setVisibleLogicalRange({
             from: -5,
@@ -79,12 +139,9 @@ const Chart = ({ data, symbol, onAddToPortfolio }) => {
           });
         }, 0);
       } else if (data.length >= 2) {
-        // For smaller datasets, fit all content with padding
         const timeScale = chartRef.current.timeScale();
-
         setTimeout(() => {
           timeScale.fitContent();
-          // Then adjust with padding
           const visibleRange = timeScale.getVisibleLogicalRange();
           if (visibleRange) {
             timeScale.setVisibleLogicalRange({
@@ -95,13 +152,35 @@ const Chart = ({ data, symbol, onAddToPortfolio }) => {
         }, 0);
       }
     }
-  }, [data]);
+  }, [data, mode, markers]);
 
   return (
     <div className="chart-wrapper">
       <div className="chart-header">
-        <h2>{symbol || 'Select a ticker'}</h2>
-        {symbol && <AddToPortfolio symbol={symbol} onAddClick={onAddToPortfolio} />}
+        {mode === 'portfolio' ? (
+          <>
+            <div className="portfolio-chart-title">
+              <h2>Portfolio Performance Index</h2>
+              {metadata && (
+                <div className="portfolio-stats-inline">
+                  <span className="stat-item">Index: {metadata.currentValue?.toFixed(2) || 100}</span>
+                  <span className={`stat-item ${metadata.totalReturn >= 0 ? 'positive' : 'negative'}`}>
+                    Return: {metadata.totalReturn >= 0 ? '+' : ''}{metadata.totalReturn?.toFixed(2)}%
+                  </span>
+                  <span className="stat-item">Positions: {metadata.positionCount}</span>
+                </div>
+              )}
+            </div>
+            <button className="back-to-stock-btn" onClick={onBackToStock}>
+              Back to Stock Chart
+            </button>
+          </>
+        ) : (
+          <div className="stock-chart-title">
+            <h2>{symbol || 'Select a ticker'}</h2>
+            {symbol && <AddToPortfolio symbol={symbol} onAddClick={onAddToPortfolio} />}
+          </div>
+        )}
       </div>
       <div ref={chartContainerRef} className="chart-container" />
     </div>

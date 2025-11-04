@@ -9,10 +9,43 @@
   margin-bottom: 24px;
 }
 
+.portfolio-title-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
 .portfolio-header h2 {
-  margin: 0 0 16px 0;
+  margin: 0;
   color: #d1d4dc;
   font-size: 24px;
+}
+
+.view-portfolio-chart-btn {
+  padding: 8px 16px;
+  background: #2962FF;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.view-portfolio-chart-btn:hover:not(:disabled) {
+  background: #1e4fd9;
+}
+
+.view-portfolio-chart-btn:disabled {
+  background: #3a3a4e;
+  color: #8a8a9e;
+  cursor: not-allowed;
+}
+
+.view-portfolio-chart-btn:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .portfolio-stats {
@@ -110,6 +143,16 @@
 .symbol-cell {
   font-weight: 600;
   color: #4a9eff;
+}
+
+.symbol-cell.clickable {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.symbol-cell.clickable:hover {
+  color: #2962FF;
+  text-decoration: underline;
 }
 
 .value-cell {

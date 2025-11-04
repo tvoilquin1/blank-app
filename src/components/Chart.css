@@ -7,7 +7,7 @@
   margin-bottom: 10px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
 }
 
 .chart-header h2 {
@@ -17,7 +17,63 @@
   font-weight: 600;
 }
 
+.stock-chart-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .chart-container {
   width: 100%;
   height: 600px;
+}
+
+/* Portfolio chart specific styles */
+.portfolio-chart-title {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.portfolio-stats-inline {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+  color: #a0a3bd;
+}
+
+.portfolio-stats-inline .stat-item {
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.portfolio-stats-inline .stat-item.positive {
+  color: #26a69a;
+  background: rgba(38, 166, 154, 0.1);
+}
+
+.portfolio-stats-inline .stat-item.negative {
+  color: #ef5350;
+  background: rgba(239, 83, 80, 0.1);
+}
+
+.back-to-stock-btn {
+  padding: 8px 16px;
+  background: #2962FF;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.back-to-stock-btn:hover {
+  background: #1e4fd9;
+}
+
+.back-to-stock-btn:active {
+  transform: translateY(1px);
 }
