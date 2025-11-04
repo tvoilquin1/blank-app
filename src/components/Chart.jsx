@@ -170,9 +170,17 @@ const Chart = ({ data, symbol, onAddToPortfolio, mode = 'stock', markers = [], m
     if (!chartRef.current || mode !== 'stock' || !data || data.length === 0) {
       // Remove Gaussian Channel series if they exist
       if (gaussianFilterSeriesRef.current) {
-        try {
-          chartRef.current.removeSeries(gaussianFilterSeriesRef.current);
-        } catch (e) {}
+        if (Array.isArray(gaussianFilterSeriesRef.current)) {
+          gaussianFilterSeriesRef.current.forEach(series => {
+            try {
+              chartRef.current.removeSeries(series);
+            } catch (e) {}
+          });
+        } else {
+          try {
+            chartRef.current.removeSeries(gaussianFilterSeriesRef.current);
+          } catch (e) {}
+        }
         gaussianFilterSeriesRef.current = null;
       }
       if (gaussianUpperBandSeriesRef.current) {
@@ -192,9 +200,19 @@ const Chart = ({ data, symbol, onAddToPortfolio, mode = 'stock', markers = [], m
 
     // Remove existing Gaussian series
     if (gaussianFilterSeriesRef.current) {
-      try {
-        chartRef.current.removeSeries(gaussianFilterSeriesRef.current);
-      } catch (e) {}
+      if (Array.isArray(gaussianFilterSeriesRef.current)) {
+        // Multiple series (new segmented approach)
+        gaussianFilterSeriesRef.current.forEach(series => {
+          try {
+            chartRef.current.removeSeries(series);
+          } catch (e) {}
+        });
+      } else {
+        // Single series (old approach)
+        try {
+          chartRef.current.removeSeries(gaussianFilterSeriesRef.current);
+        } catch (e) {}
+      }
       gaussianFilterSeriesRef.current = null;
     }
     if (gaussianUpperBandSeriesRef.current) {
@@ -244,47 +262,88 @@ const Chart = ({ data, symbol, onAddToPortfolio, mode = 'stock', markers = [], m
         return;
       }
 
-      // Determine if channel is bullish (green) or bearish (red)
-      // Check the trend of the filter line
-      const isBullish = gaussian.rawFilter.length >= 2 &&
-                        gaussian.rawFilter[gaussian.rawFilter.length - 1] >
-                        gaussian.rawFilter[gaussian.rawFilter.length - 2];
+      // Split data into bullish (green) and bearish (red) segments
+      // We'll create separate series for each color segment
+      const segments = [];
+      let currentSegment = null;
+      let currentColor = null;
 
-      const channelColor = isBullish ? '#0aff68' : '#ff0a5a';
-      const fillColor = isBullish ? 'rgba(10, 255, 104, 0.1)' : 'rgba(255, 10, 90, 0.1)';
+      for (let i = 0; i < gaussian.rawFilter.length; i++) {
+        // Determine if this point is bullish or bearish
+        const isBullish = i === 0 ? true : gaussian.rawFilter[i] >= gaussian.rawFilter[i - 1];
+        const color = isBullish ? '#0aff68' : '#ff0a5a';
 
-      // Add upper band line
-      const upperBandSeries = chartRef.current.addSeries(LineSeries, {
-        color: channelColor,
-        lineWidth: 1,
-        priceScaleId: 'right',
-        lastValueVisible: false,
-        priceLineVisible: false,
+        // If color changed or first point, start new segment
+        if (color !== currentColor) {
+          if (currentSegment) {
+            // Add the first point of next segment to current segment for continuity
+            currentSegment.filter.push(gaussian.filter[i]);
+            currentSegment.upper.push(gaussian.upperBand[i]);
+            currentSegment.lower.push(gaussian.lowerBand[i]);
+            segments.push(currentSegment);
+          }
+
+          // Start new segment
+          currentSegment = {
+            color: color,
+            filter: [gaussian.filter[i]],
+            upper: [gaussian.upperBand[i]],
+            lower: [gaussian.lowerBand[i]]
+          };
+          currentColor = color;
+        } else {
+          // Continue current segment
+          currentSegment.filter.push(gaussian.filter[i]);
+          currentSegment.upper.push(gaussian.upperBand[i]);
+          currentSegment.lower.push(gaussian.lowerBand[i]);
+        }
+      }
+
+      // Add final segment
+      if (currentSegment) {
+        segments.push(currentSegment);
+      }
+
+      // Create series for each segment
+      const allSeries = [];
+
+      segments.forEach(segment => {
+        // Upper band
+        const upperSeries = chartRef.current.addSeries(LineSeries, {
+          color: segment.color,
+          lineWidth: 1,
+          priceScaleId: 'right',
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        upperSeries.setData(segment.upper);
+        allSeries.push(upperSeries);
+
+        // Filter (middle) line
+        const filterSeries = chartRef.current.addSeries(LineSeries, {
+          color: segment.color,
+          lineWidth: 2,
+          priceScaleId: 'right',
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        filterSeries.setData(segment.filter);
+        allSeries.push(filterSeries);
+
+        // Lower band
+        const lowerSeries = chartRef.current.addSeries(LineSeries, {
+          color: segment.color,
+          lineWidth: 1,
+          priceScaleId: 'right',
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        lowerSeries.setData(segment.lower);
+        allSeries.push(lowerSeries);
       });
-      upperBandSeries.setData(gaussian.upperBand);
-      gaussianUpperBandSeriesRef.current = upperBandSeries;
 
-      // Add filter (middle) line
-      const filterSeries = chartRef.current.addSeries(LineSeries, {
-        color: channelColor,
-        lineWidth: 2,
-        priceScaleId: 'right',
-        lastValueVisible: false,
-        priceLineVisible: false,
-      });
-      filterSeries.setData(gaussian.filter);
-      gaussianFilterSeriesRef.current = filterSeries;
-
-      // Add lower band line
-      const lowerBandSeries = chartRef.current.addSeries(LineSeries, {
-        color: channelColor,
-        lineWidth: 1,
-        priceScaleId: 'right',
-        lastValueVisible: false,
-        priceLineVisible: false,
-      });
-      lowerBandSeries.setData(gaussian.lowerBand);
-      gaussianLowerBandSeriesRef.current = lowerBandSeries;
+      // Store all series for cleanup
+      gaussianFilterSeriesRef.current = allSeries;
 
       // Note: lightweight-charts doesn't have a built-in area between two lines feature
       // The channel fill would need to be implemented with a custom plugin or overlay canvas
