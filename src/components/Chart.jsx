@@ -167,7 +167,7 @@ const Chart = ({ data, symbol, onAddToPortfolio, mode = 'stock', markers = [], m
 
   // Update Gaussian Channel overlay based on study selection
   useEffect(() => {
-    if (!chartRef.current || mode !== 'stock' || !data || data.length === 0) {
+    if (!chartRef.current || !data || data.length === 0) {
       // Remove Gaussian Channel series if they exist
       if (gaussianFilterSeriesRef.current) {
         if (Array.isArray(gaussianFilterSeriesRef.current)) {
@@ -230,7 +230,7 @@ const Chart = ({ data, symbol, onAddToPortfolio, mode = 'stock', markers = [], m
 
     // If Gaussian study is selected, add the overlay
     if (study === 'Gaussian') {
-      console.log('Gaussian study selected, data length:', data?.length);
+      console.log('Gaussian study selected, data length:', data?.length, 'mode:', mode);
 
       // Validate data before calculating
       if (!data || data.length < 10) {
@@ -238,7 +238,14 @@ const Chart = ({ data, symbol, onAddToPortfolio, mode = 'stock', markers = [], m
         return;
       }
 
-      // Check if data has required properties
+      // Portfolio mode uses line data {time, value}, need to skip Gaussian for now
+      // as it requires OHLC data
+      if (mode === 'portfolio') {
+        console.warn('Gaussian Channel not supported for portfolio chart (requires OHLC data)');
+        return;
+      }
+
+      // Check if data has required properties (OHLC)
       const hasValidData = data.every(d =>
         d &&
         typeof d.high === 'number' &&
@@ -250,7 +257,7 @@ const Chart = ({ data, symbol, onAddToPortfolio, mode = 'stock', markers = [], m
       );
 
       if (!hasValidData) {
-        console.error('Invalid data format for Gaussian Channel');
+        console.error('Invalid data format for Gaussian Channel - requires OHLC data');
         return;
       }
 

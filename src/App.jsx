@@ -141,7 +141,6 @@ function App() {
     if (success) {
       setShowAddModal(false);
       setPortfolioRefresh(prev => prev + 1); // Trigger portfolio refresh
-      alert(`Successfully added ${entry.symbol} to portfolio!`);
     } else {
       alert('Failed to add entry to portfolio. Please try again.');
     }
@@ -158,7 +157,6 @@ function App() {
       setShowEditModal(false);
       setEditingEntry(null);
       setPortfolioRefresh(prev => prev + 1); // Trigger portfolio refresh
-      alert(`Successfully updated ${updatedEntry.symbol} entry!`);
     } else {
       alert('Failed to update entry. Please try again.');
     }
@@ -197,11 +195,9 @@ function App() {
               </div>
             )}
 
-            {chartMode === 'stock' && (
-              <div className="studies-section">
-                <StudiesSelector onStudyChange={handleStudyChange} currentStudy={currentStudy} />
-              </div>
-            )}
+            <div className="studies-section">
+              <StudiesSelector onStudyChange={handleStudyChange} currentStudy={currentStudy} />
+            </div>
 
             <div className="time-range-section">
               <TimeRangeSelector onRangeChange={handleRangeChange} currentRange={timeRange} />
@@ -248,6 +244,7 @@ function App() {
             markers={portfolioMarkers}
             metadata={portfolioMetadata}
             onBackToStock={handleBackToStockChart}
+            study={currentStudy}
           />
         )}
 
