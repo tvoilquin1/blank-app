@@ -30,6 +30,8 @@ function App() {
   const [portfolioMarkers, setPortfolioMarkers] = useState([]);
   const [portfolioMetadata, setPortfolioMetadata] = useState({});
   const [currentStudy, setCurrentStudy] = useState(null);
+  const [updateProgress, setUpdateProgress] = useState(null); // Progress tracking state
+  const [dataSource, setDataSource] = useState(null); // Track if using API or mock data
 
   // Load data whenever parameters change (only for stock mode)
   useEffect(() => {
@@ -74,8 +76,10 @@ function App() {
     setError(null);
 
     try {
-      const data = await fetchStockData(ticker, timeframe, timeRange, customDates);
-      setChartData(data);
+      const result = await fetchStockData(ticker, timeframe, timeRange, customDates);
+      // fetchStockData now returns {data, source, ...}
+      setChartData(result.data);
+      setDataSource(result.source);
     } catch (err) {
       setError('Failed to load stock data. Please try again.');
       console.error('Error loading data:', err);
@@ -87,9 +91,17 @@ function App() {
   const loadPortfolioChartData = async () => {
     setLoading(true);
     setError(null);
+    setUpdateProgress(null);
 
     try {
-      const { chartData, markers, metadata } = await calculatePortfolioPerformanceIndex(timeRange, customDates);
+      const { chartData, markers, metadata } = await calculatePortfolioPerformanceIndex(
+        timeRange,
+        customDates,
+        // Progress callback
+        (progressState) => {
+          setUpdateProgress(progressState);
+        }
+      );
 
       if (chartData.length === 0) {
         setError('No portfolio data available for the selected date range.');
@@ -103,6 +115,7 @@ function App() {
       console.error('Error loading portfolio chart:', err);
     } finally {
       setLoading(false);
+      setUpdateProgress(null);
     }
   };
 
@@ -249,8 +262,9 @@ function App() {
         )}
 
         <PortfolioView
-          key={portfolioRefresh}
           currentPrices={currentPrices}
+          refreshTrigger={portfolioRefresh}
+          updateProgress={updateProgress}
           onEditEntry={handleEditEntry}
           onViewPortfolioChart={handleViewPortfolioChart}
           onViewStockChart={handleViewStockChart}

@@ -183,20 +183,37 @@ const fetchRealData = async (symbol, timeframe, startDate, endDate) => {
 /**
  * Main function to fetch stock data
  * Will try real API first, fall back to mock data
+ * Returns object with data and source metadata
  */
 export const fetchStockData = async (symbol, timeframe, rangeType, customDates) => {
   const { startDate, endDate } = calculateDateRange(rangeType, customDates);
 
   // Try to fetch real data
-  const realData = await fetchRealData(symbol, timeframe, startDate, endDate);
+  try {
+    const realData = await fetchRealData(symbol, timeframe, startDate, endDate);
 
-  if (realData && realData.length > 0) {
-    return realData;
+    if (realData && realData.length > 0) {
+      return {
+        data: realData,
+        source: 'api',
+        timestamp: Date.now(),
+        symbol
+      };
+    }
+  } catch (error) {
+    console.warn(`API fetch failed for ${symbol}, using mock data:`, error.message);
   }
 
   // Fall back to mock data
   console.log('Using mock data for', symbol);
-  return generateMockData(startDate, endDate, timeframe, symbol);
+  const mockData = generateMockData(startDate, endDate, timeframe, symbol);
+
+  return {
+    data: mockData,
+    source: 'mock',
+    timestamp: Date.now(),
+    symbol
+  };
 };
 
 /**

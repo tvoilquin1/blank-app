@@ -11,13 +11,20 @@ import { getCurrentPrice } from '../utils/stockApi';
 import { hasPortfolioData } from '../utils/portfolioChartCalculator';
 import './PortfolioView.css';
 
-function PortfolioView({ currentPrices = {}, onEditEntry, onViewPortfolioChart, onViewStockChart }) {
+function PortfolioView({ currentPrices = {}, refreshTrigger = 0, updateProgress = null, onEditEntry, onViewPortfolioChart, onViewStockChart }) {
   const [entries, setEntries] = useState([]);
   const [sortBy, setSortBy] = useState('date'); // 'date', 'symbol', 'value'
 
   useEffect(() => {
     loadEntries();
   }, []);
+
+  // Reload entries when refreshTrigger changes (without full remount)
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      loadEntries();
+    }
+  }, [refreshTrigger]);
 
   const loadEntries = () => {
     const portfolioEntries = getPortfolioEntries();

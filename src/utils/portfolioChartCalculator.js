@@ -1,5 +1,6 @@
 import { fetchStockData, calculateDateRange } from './stockApi';
 import { getPortfolioEntries, calculateCostBasis } from './portfolioStorage';
+import { getPortfolioDataManager } from './portfolioDataManager';
 
 /**
  * Parse MM/DD/YYYY date string to Date object
@@ -10,29 +11,25 @@ const parsePortfolioDate = (dateStr) => {
 };
 
 /**
- * Fetch historical data for multiple symbols
+ * Fetch historical data for multiple symbols with smart caching and progress tracking
  * @param {Array<string>} symbols - Array of stock symbols
  * @param {Date} startDate - Start date for historical data
  * @param {Date} endDate - End date for historical data
+ * @param {Function} onProgress - Progress callback
  * @returns {Object} Map of symbol to historical price data
  */
-export const fetchMultipleSymbolsData = async (symbols, startDate, endDate) => {
-  const uniqueSymbols = [...new Set(symbols)];
-  const dataPromises = uniqueSymbols.map(symbol =>
-    fetchStockData(symbol, '1day', 'custom', {
-      start: startDate.toISOString(),
-      end: endDate.toISOString()
-    })
+export const fetchMultipleSymbolsData = async (symbols, startDate, endDate, onProgress = null) => {
+  const dataManager = getPortfolioDataManager();
+
+  // Use the smart data manager for fetching with caching and throttling
+  const results = await dataManager.fetchHistoricalData(
+    symbols,
+    startDate,
+    endDate,
+    { onProgress }
   );
 
-  const results = await Promise.all(dataPromises);
-
-  const dataMap = {};
-  uniqueSymbols.forEach((symbol, index) => {
-    dataMap[symbol] = results[index];
-  });
-
-  return dataMap;
+  return results;
 };
 
 /**
@@ -71,9 +68,10 @@ const getPriceAtTime = (symbolData, timestamp) => {
  * Calculate portfolio performance index with dynamic rebalancing
  * @param {string} rangeType - Date range type ('ytd', '1y', '5y', 'custom')
  * @param {Object} customDates - Custom date range if rangeType is 'custom'
+ * @param {Function} onProgress - Progress callback for data fetching
  * @returns {Object} { chartData: Array, markers: Array, metadata: Object }
  */
-export const calculatePortfolioPerformanceIndex = async (rangeType = '1y', customDates = null) => {
+export const calculatePortfolioPerformanceIndex = async (rangeType = '1y', customDates = null, onProgress = null) => {
   const entries = getPortfolioEntries();
 
   if (entries.length === 0) {
@@ -94,8 +92,8 @@ export const calculatePortfolioPerformanceIndex = async (rangeType = '1y', custo
   // Get all unique symbols
   const symbols = [...new Set(entries.map(e => e.symbol))];
 
-  // Fetch historical data for all symbols
-  const historicalDataMap = await fetchMultipleSymbolsData(symbols, actualStartDate, endDate);
+  // Fetch historical data for all symbols with progress tracking
+  const historicalDataMap = await fetchMultipleSymbolsData(symbols, actualStartDate, endDate, onProgress);
 
   // Build a sorted array of all unique timestamps from all symbols
   const timestampSet = new Set();
@@ -199,26 +197,24 @@ export const hasPortfolioData = () => {
 };
 
 /**
- * Get current prices for all portfolio symbols using actual chart data
+ * Get current prices for all portfolio symbols with smart caching
+ * @param {Function} onProgress - Progress callback
  * @returns {Promise<Object>} Map of symbol to current price
  */
-export const getPortfolioCurrentPrices = async () => {
+export const getPortfolioCurrentPrices = async (onProgress = null) => {
   const entries = getPortfolioEntries();
   if (entries.length === 0) return {};
 
   const symbols = [...new Set(entries.map(e => e.symbol))];
-  const now = new Date();
-  const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+  const dataManager = getPortfolioDataManager();
 
-  // Fetch recent data for all symbols
-  const dataMap = await fetchMultipleSymbolsData(symbols, oneYearAgo, now);
+  // Use the smart data manager for current prices
+  const priceData = await dataManager.fetchCurrentPrices(symbols, { onProgress });
 
   const prices = {};
-  symbols.forEach(symbol => {
-    const symbolData = dataMap[symbol];
-    if (symbolData && symbolData.length > 0) {
-      // Use the most recent close price
-      prices[symbol] = symbolData[symbolData.length - 1].close;
+  Object.entries(priceData).forEach(([symbol, data]) => {
+    if (data && data.price !== undefined) {
+      prices[symbol] = data.price;
     }
   });
 
