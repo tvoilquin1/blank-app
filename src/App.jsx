@@ -7,6 +7,7 @@ import StudiesSelector from './components/StudiesSelector';
 import AddPortfolioEntryModal from './components/AddPortfolioEntryModal';
 import EditPortfolioEntryModal from './components/EditPortfolioEntryModal';
 import PortfolioView from './components/PortfolioView';
+import DataUpdateProgress from './components/DataUpdateProgress';
 import { fetchStockData, getCurrentPrice } from './utils/stockApi';
 import { addPortfolioEntry, updatePortfolioEntry, getPortfolioEntries } from './utils/portfolioStorage';
 import { calculatePortfolioPerformanceIndex, getPortfolioCurrentPrices } from './utils/portfolioChartCalculator';
@@ -286,6 +287,9 @@ function App() {
           onSave={handleUpdatePortfolioEntry}
         />
       )}
+
+      {/* Progress overlay for data updates */}
+      <DataUpdateProgress progress={updateProgress} />
 
       <footer className="app-footer">
         <p>

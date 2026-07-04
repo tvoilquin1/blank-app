@@ -1,0 +1,56 @@
+.data-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: help;
+  transition: all 0.2s;
+}
+
+.data-status-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.data-status-badge.api {
+  background: rgba(38, 166, 154, 0.15);
+  color: #26a69a;
+  border: 1px solid rgba(38, 166, 154, 0.3);
+}
+
+.data-status-badge.cached {
+  background: rgba(156, 136, 255, 0.15);
+  color: #9c88ff;
+  border: 1px solid rgba(156, 136, 255, 0.3);
+}
+
+.data-status-badge.stale {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.data-status-badge.mock {
+  background: rgba(139, 139, 155, 0.15);
+  color: #8b8b9b;
+  border: 1px solid rgba(139, 139, 155, 0.3);
+}
+
+.badge-icon {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.badge-text {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-time {
+  opacity: 0.7;
+  font-weight: 400;
+  margin-left: 2px;
+}

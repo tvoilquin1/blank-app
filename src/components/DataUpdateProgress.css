@@ -1,0 +1,279 @@
+.data-update-progress-overlay {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 1000;
+  max-width: 400px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.progress-card {
+  background: rgba(37, 37, 54, 0.98);
+  border: 2px solid #2B2B43;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+.progress-header {
+  margin-bottom: 16px;
+}
+
+.progress-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.progress-icon {
+  font-size: 20px;
+}
+
+.progress-title h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #d1d4dc;
+  font-weight: 600;
+}
+
+.progress-summary {
+  color: #8b8b9b;
+  font-size: 14px;
+}
+
+.elapsed-time {
+  color: #6b6b7b;
+}
+
+.progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #2B2B43;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4a9eff 0%, #26a69a 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-percentage {
+  min-width: 40px;
+  text-align: right;
+  color: #d1d4dc;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.progress-stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.stat {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat.success {
+  background: rgba(38, 166, 154, 0.2);
+  color: #26a69a;
+}
+
+.stat.loading {
+  background: rgba(74, 158, 255, 0.2);
+  color: #4a9eff;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.stat.cached {
+  background: rgba(156, 136, 255, 0.2);
+  color: #9c88ff;
+}
+
+.stat.failed {
+  background: rgba(239, 83, 80, 0.2);
+  color: #ef5350;
+}
+
+.stat.pending {
+  background: rgba(139, 139, 155, 0.2);
+  color: #8b8b9b;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.progress-details {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #2B2B43;
+}
+
+.details-toggle {
+  background: transparent;
+  border: none;
+  color: #4a9eff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s;
+}
+
+.details-toggle:hover {
+  color: #3a8eef;
+}
+
+.symbols-list {
+  margin-top: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.symbols-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.symbols-list::-webkit-scrollbar-track {
+  background: #1e1e1e;
+  border-radius: 3px;
+}
+
+.symbols-list::-webkit-scrollbar-thumb {
+  background: #2B2B43;
+  border-radius: 3px;
+}
+
+.symbols-list::-webkit-scrollbar-thumb:hover {
+  background: #3a3a4e;
+}
+
+.symbol-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(30, 30, 30, 0.5);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.symbol-icon {
+  font-size: 14px;
+  min-width: 16px;
+  text-align: center;
+}
+
+.symbol-name {
+  font-weight: 600;
+  color: #d1d4dc;
+  min-width: 60px;
+}
+
+.symbol-status {
+  color: #8b8b9b;
+  flex: 1;
+  font-size: 12px;
+}
+
+.source-badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.source-badge.api {
+  background: rgba(38, 166, 154, 0.2);
+  color: #26a69a;
+}
+
+.source-badge.cached {
+  background: rgba(156, 136, 255, 0.2);
+  color: #9c88ff;
+}
+
+.source-badge.stale {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+}
+
+.source-badge.mock {
+  background: rgba(139, 139, 155, 0.2);
+  color: #8b8b9b;
+}
+
+.symbol-time {
+  font-size: 11px;
+  color: #6b6b7b;
+}
+
+.symbol-error {
+  color: #ef5350;
+  cursor: help;
+}
+
+.status-loading .symbol-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .data-update-progress-overlay {
+    left: 20px;
+    right: 20px;
+    max-width: none;
+  }
+}
