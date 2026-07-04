@@ -12,30 +12,34 @@ function App() {
   const [customDates, setCustomDates] = useState(null);
   const [timeframe, setTimeframe] = useState('1day');
   const [chartData, setChartData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [dataSource, setDataSource] = useState(null);
 
   // Load data whenever parameters change
   useEffect(() => {
-    loadStockData();
-  }, [ticker, timeRange, timeframe, customDates]);
-
-  const loadStockData = async () => {
     if (!ticker) return;
 
-    setLoading(true);
-    setError(null);
+    const loadData = async () => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const data = await fetchStockData(ticker, timeframe, timeRange, customDates);
-      setChartData(data);
-    } catch (err) {
-      setError('Failed to load stock data. Please try again.');
-      console.error('Error loading data:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+        const result = await fetchStockData(ticker, timeframe, timeRange, customDates);
+        setChartData(result.data);
+        setDataSource(result.source);
+      } catch (err) {
+        setError(err.message || 'Failed to load stock data. Please try again.');
+        console.error('Error loading data:', err);
+        setChartData([]);
+        setDataSource(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [ticker, timeRange, timeframe, customDates]);
 
   const handleTickerChange = (newTicker) => {
     setTicker(newTicker);
@@ -87,8 +91,21 @@ function App() {
           </div>
         )}
 
-        {!loading && !error && (
-          <Chart data={chartData} symbol={ticker} />
+        {!loading && !error && chartData.length === 0 && (
+          <div className="info-container">
+            <p>No data available for the selected parameters</p>
+          </div>
+        )}
+
+        {!loading && !error && chartData.length > 0 && (
+          <>
+            {dataSource === 'mock' && (
+              <div className="warning-container">
+                ⚠️ Using mock data (Real API unavailable or no API key provided)
+              </div>
+            )}
+            <Chart data={chartData} symbol={ticker} />
+          </>
         )}
       </div>
 

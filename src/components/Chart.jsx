@@ -57,14 +57,21 @@ const Chart = ({ data, symbol }) => {
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      chart.remove();
+      if (chartRef.current) {
+        chartRef.current.remove();
+      }
     };
   }, []);
 
   useEffect(() => {
-    if (candlestickSeriesRef.current && data && data.length > 0) {
-      candlestickSeriesRef.current.setData(data);
-      chartRef.current.timeScale().fitContent();
+    if (candlestickSeriesRef.current && data) {
+      if (data.length > 0) {
+        candlestickSeriesRef.current.setData(data);
+        chartRef.current.timeScale().fitContent();
+      } else {
+        // Clear the chart when no data
+        candlestickSeriesRef.current.setData([]);
+      }
     }
   }, [data]);
 

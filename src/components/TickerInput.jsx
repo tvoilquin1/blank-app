@@ -6,9 +6,20 @@ const TickerInput = ({ onTickerChange, currentTicker }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (inputValue.trim()) {
-      onTickerChange(inputValue.trim().toUpperCase());
+    const trimmed = inputValue.trim().toUpperCase();
+
+    // Validate ticker format: 1-5 uppercase letters
+    if (!trimmed) {
+      alert('Please enter a ticker symbol');
+      return;
     }
+
+    if (!/^[A-Z]{1,5}$/.test(trimmed)) {
+      alert('Please enter a valid ticker symbol (1-5 letters, e.g., AAPL)');
+      return;
+    }
+
+    onTickerChange(trimmed);
   };
 
   const popularTickers = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA', 'NVDA', 'META'];

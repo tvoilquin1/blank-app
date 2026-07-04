@@ -25,6 +25,29 @@ const TimeRangeSelector = ({ onRangeChange, currentRange }) => {
   const handleCustomSubmit = (e) => {
     e.preventDefault();
     if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const today = new Date();
+
+      // Validation: start must be before end
+      if (start >= end) {
+        alert('Start date must be before end date');
+        return;
+      }
+
+      // Validation: end date cannot be in the future
+      if (end > today) {
+        alert('End date cannot be in the future');
+        return;
+      }
+
+      // Validation: reasonable date range (not too old)
+      const minDate = new Date('1990-01-01');
+      if (start < minDate) {
+        alert('Start date cannot be before 1990');
+        return;
+      }
+
       onRangeChange('custom', { start: startDate, end: endDate });
       setShowCustom(false);
     }
@@ -55,6 +78,8 @@ const TimeRangeSelector = ({ onRangeChange, currentRange }) => {
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 className="date-input"
+                min="1990-01-01"
+                max={new Date().toISOString().split('T')[0]}
                 required
               />
             </div>
@@ -65,6 +90,8 @@ const TimeRangeSelector = ({ onRangeChange, currentRange }) => {
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 className="date-input"
+                min="1990-01-01"
+                max={new Date().toISOString().split('T')[0]}
                 required
               />
             </div>
